@@ -1,0 +1,11 @@
+# Audios générés : lourds et régénérables depuis textes/
+audio/*
+!audio/.gitkeep
+
+# Python
+__pycache__/
+*.pyc
+
+# Divers
+.DS_Store
+Thumbs.db
