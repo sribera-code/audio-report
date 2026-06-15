@@ -29,3 +29,7 @@ python generate_audio.py textes/<sujet>.txt --engine piper `
     --voice "$env:USERPROFILE\.local\share\piper\voices\fr_FR-siwis-medium.onnx" `
     --output audio/<sujet>
 ```
+
+Versionnage : les textes que **je** génère sont régénérables via un prompt, donc
+**non versionnés**. Ajouter chaque nouveau `textes/<sujet>.txt` que je crée à
+`.gitignore` (les textes écrits à la main par l'utilisateur, eux, restent suivis).
