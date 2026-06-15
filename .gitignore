@@ -3,7 +3,8 @@ audio/*
 !audio/.gitkeep
 
 # Textes générés par Claude (régénérables via un prompt) — non versionnés
-textes/modeles-du-monde-yann-lecun.txt
+textes/*
+!textes/.gitkeep
 
 # Python
 __pycache__/
