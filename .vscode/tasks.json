@@ -1,7 +1,7 @@
 {
   // Génère l'audio du fichier .txt actuellement ouvert.
   // Raccourci : Ctrl+Shift+B  (ou : Terminal > Run Build Task).
-  // La sortie va dans audio/<nom-du-fichier>.mp3 et .mp4
+  // La sortie va dans audio/<nom-du-fichier>.mp3
   "version": "2.0.0",
   "tasks": [
     {
@@ -9,11 +9,10 @@
       "type": "shell",
       "command": "python",
       "args": [
-        "generer_audio.py",
+        "generate_audio.py",
         "${file}",
         "--engine", "piper",
         "--voice", "${env:USERPROFILE}\\.local\\share\\piper\\voices\\fr_FR-siwis-medium.onnx",
-        "--format", "both",
         "--output", "audio/${fileBasenameNoExtension}"
       ],
       "options": {
@@ -24,29 +23,6 @@
         }
       },
       "group": { "kind": "build", "isDefault": true },
-      "presentation": { "reveal": "always", "panel": "shared", "clear": true },
-      "problemMatcher": []
-    },
-    {
-      "label": "Générer l'audio (MP3 seulement)",
-      "type": "shell",
-      "command": "python",
-      "args": [
-        "generer_audio.py",
-        "${file}",
-        "--engine", "piper",
-        "--voice", "${env:USERPROFILE}\\.local\\share\\piper\\voices\\fr_FR-siwis-medium.onnx",
-        "--format", "mp3",
-        "--output", "audio/${fileBasenameNoExtension}"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}",
-        "env": {
-          "PYTHONUTF8": "1",
-          "PATH": "C:\\Users\\riber\\AppData\\Local\\Python\\pythoncore-3.14-64\\Scripts;C:\\Users\\riber\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\\ffmpeg-8.1.1-full_build\\bin;${env:PATH}"
-        }
-      },
-      "group": "build",
       "presentation": { "reveal": "always", "panel": "shared", "clear": true },
       "problemMatcher": []
     }

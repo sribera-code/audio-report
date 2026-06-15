@@ -1,35 +1,40 @@
 # audio-report
 
 Mes **articles audio** perso : j'écris (ou je génère) un texte, le script le
-transforme en MP3/MP4 avec une voix neuronale naturelle, et je l'écoute en
-faisant autre chose.
+transforme en MP3 avec une voix neuronale naturelle, et je l'écoute en faisant
+autre chose.
 
 ## Organisation
 
 ```
 audio-report/
-├── generer_audio.py        # le script texte -> audio
+├── generate_audio.py       # le script texte -> audio
 ├── textes/                 # un .txt par sujet (la source à narrer)
-├── audio/                  # les .mp3 / .mp4 générés (ignorés par git)
+├── audio/                  # les .mp3 générés (ignorés par git)
 └── .vscode/tasks.json      # génération en un raccourci dans VS Code
 ```
 
-Chaque fichier `textes/mon-sujet.txt` produit `audio/mon-sujet.mp3` (+ `.mp4`).
-Les paragraphes sont séparés par une **ligne vide** ; la première ligne sert de
-titre à la carte du MP4.
+Chaque fichier `textes/mon-sujet.txt` produit `audio/mon-sujet.mp3`.
+Les paragraphes sont séparés par une **ligne vide**.
 
 ## Générer un audio (dans VS Code)
 
 1. Ouvrir le fichier `textes/<sujet>.txt`.
 2. `Ctrl+Shift+B` → tâche **« Générer l'audio (fichier courant, voix Piper) »**.
-3. Le MP3 et le MP4 apparaissent dans `audio/`.
+3. Le MP3 apparaît dans `audio/`.
 
 Ou en ligne de commande :
 
 ```powershell
-python generer_audio.py textes/mon-sujet.txt --engine piper `
+python generate_audio.py textes/mon-sujet.txt --engine piper `
     --voice "$env:USERPROFILE\.local\share\piper\voices\fr_FR-siwis-medium.onnx" `
-    --format both --output audio/mon-sujet
+    --output audio/mon-sujet
+```
+
+Le plus court (auto-détection du moteur, sortie à côté du texte) :
+
+```powershell
+python generate_audio.py textes/mon-sujet.txt
 ```
 
 ## Pré-requis (déjà installés sur cette machine)
@@ -39,7 +44,6 @@ python generer_audio.py textes/mon-sujet.txt --engine piper `
 | ffmpeg     | `winget install Gyan.FFmpeg` |
 | piper-tts  | `pip install piper-tts` |
 | voix FR    | `python -m piper.download_voices fr_FR-siwis-medium` |
-| pillow     | `pip install pillow` (jolie carte-titre du MP4) |
 
 > Note réseau : si le téléchargement de la voix échoue (vérification SSL/proxy),
 > récupérer les 2 fichiers à la main depuis HuggingFace
@@ -53,12 +57,9 @@ python generer_audio.py textes/mon-sujet.txt --engine piper `
 |--------------|------|--------|
 | `--engine`   | `piper` (naturel) / `espeak` (secours) / `auto` | `auto` |
 | `--voice`    | nom ou chemin du modèle Piper | `fr_FR-siwis-medium` |
-| `--format`   | `mp3` / `mp4` / `both` | `both` |
 | `--output`   | nom de base de sortie | nom du texte |
+| `--rate`     | vitesse espeak (mots/min) | `155` |
 | `--gap`      | silence entre paragraphes (s) | `0.6` |
-| `--title`    | titre de la carte du MP4 | 1re ligne du texte |
-| `--subtitle` | sous-titre de la carte | aucun |
-| `--image`    | image de fond du MP4 (sinon carte-titre auto) | — |
 
 ## Autres voix Piper à essayer
 
