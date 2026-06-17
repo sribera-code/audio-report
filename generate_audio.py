@@ -100,11 +100,23 @@ def detecter_moteur():
     sys.exit("[ERREUR] Aucun moteur TTS trouvé. Installe 'piper-tts' ou 'espeak-ng'.")
 
 
+def cmd_piper(voix, sortie_wav):
+    """Construit la commande Piper, que ce soit l'exécutable ou le module Python."""
+    if shutil.which("piper"):
+        return ["piper", "--model", voix, "--output_file", sortie_wav]
+    # Repli : Piper installé comme module Python (python -m piper).
+    # -X utf8 est IMPÉRATIF : le module lit le texte via sys.stdin en mode
+    # texte, donc avec l'encodage local (cp1252 sous Windows). Sans le mode
+    # UTF-8, nos accents envoyés en UTF-8 sont mal décodés et la voix prononce
+    # du mojibake (« é » devient « Ã© »), rendant l'audio incompréhensible.
+    return [sys.executable, "-X", "utf8", "-m", "piper", "-m", voix, "-f", sortie_wav]
+
+
 def synth_piper(texte, sortie_wav, voix):
     """Synthèse via Piper (voix neuronale)."""
     # Piper lit le texte sur l'entrée standard et écrit un WAV.
     proc = subprocess.run(
-        ["piper", "--model", voix, "--output_file", sortie_wav],
+        cmd_piper(voix, sortie_wav),
         input=texte.encode("utf-8"),
         stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
     )

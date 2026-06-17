@@ -30,6 +30,6 @@ python generate_audio.py textes/<sujet>.txt --engine piper `
     --output audio/<sujet>
 ```
 
-Versionnage : les textes que **je** génère sont régénérables via un prompt, donc
-**non versionnés**. Ajouter chaque nouveau `textes/<sujet>.txt` que je crée à
-`.gitignore` (les textes écrits à la main par l'utilisateur, eux, restent suivis).
+Versionnage : `textes/` et `audio/` sont **entièrement ignorés par git** (seuls les
+`.gitkeep` sont suivis). Les textes sont régénérables via un prompt et l'audio via
+le script — rien à versionner ni à ajouter à `.gitignore` à la création.
