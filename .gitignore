@@ -1,10 +1,12 @@
-# Audios générés : lourds et régénérables depuis textes/
+# Audios générés : lourds et régénérables depuis texts/
+# (rangés par jour : audio/AAAA_MM_JJ/<sujet>.mp3)
 audio/*
 !audio/.gitkeep
 
 # Textes générés par Claude (régénérables via un prompt) — non versionnés
-textes/*
-!textes/.gitkeep
+# (rangés par jour : texts/AAAA_MM_JJ/<sujet>.txt)
+texts/*
+!texts/.gitkeep
 
 # Python
 __pycache__/

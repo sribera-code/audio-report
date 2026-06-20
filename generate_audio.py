@@ -27,11 +27,11 @@ Pour la voix NATURELLE (Piper) :
 UTILISATION
 ------------------------------------------------------------------------------
 # Voix naturelle :
-    python generate_audio.py textes/mon-sujet.txt --engine piper \
-        --voice fr_FR-siwis-medium --output audio/mon-sujet
+    python generate_audio.py texts/2026_06_20/mon-sujet.txt --engine piper \
+        --voice fr_FR-siwis-medium --output audio/2026_06_20/mon-sujet
 
 # Auto : prend Piper si dispo, sinon espeak :
-    python generate_audio.py textes/mon-sujet.txt
+    python generate_audio.py texts/2026_06_20/mon-sujet.txt
 
 Options principales :
     --engine    piper | espeak | auto   (défaut: auto)
@@ -103,13 +103,29 @@ def detecter_moteur():
 def cmd_piper(voix, sortie_wav):
     """Construit la commande Piper, que ce soit l'exécutable ou le module Python."""
     if shutil.which("piper"):
+        # piper.exe est aussi un programme Python : comme le module, il lit le
+        # texte via sys.stdin en mode texte (encodage local cp1252 sous Windows).
+        # Le passage en UTF-8 est assuré pour les deux branches par env_piper().
         return ["piper", "--model", voix, "--output_file", sortie_wav]
     # Repli : Piper installé comme module Python (python -m piper).
-    # -X utf8 est IMPÉRATIF : le module lit le texte via sys.stdin en mode
-    # texte, donc avec l'encodage local (cp1252 sous Windows). Sans le mode
-    # UTF-8, nos accents envoyés en UTF-8 sont mal décodés et la voix prononce
-    # du mojibake (« é » devient « Ã© »), rendant l'audio incompréhensible.
+    # -X utf8 reste posé ici par ceinture et bretelles (il ne s'applique qu'au
+    # module, pas à piper.exe ; c'est env_piper() qui couvre les deux cas).
     return [sys.executable, "-X", "utf8", "-m", "piper", "-m", voix, "-f", sortie_wav]
+
+
+def env_piper():
+    """Environnement forçant l'UTF-8 pour le sous-processus Piper.
+
+    IMPÉRATIF : Piper (que ce soit piper.exe OU python -m piper) lit le texte
+    via sys.stdin, qui sous Windows utilise par défaut l'encodage local cp1252.
+    Nos accents, envoyés en UTF-8, y sont alors mal décodés et la voix prononce
+    du mojibake (« é » devient « Ã© »), rendant l'audio incompréhensible et
+    bien plus long. PYTHONUTF8=1 force le mode UTF-8 quelle que soit la branche.
+    """
+    env = os.environ.copy()
+    env["PYTHONUTF8"] = "1"
+    env["PYTHONIOENCODING"] = "utf-8"
+    return env
 
 
 def synth_piper(texte, sortie_wav, voix):
@@ -119,6 +135,7 @@ def synth_piper(texte, sortie_wav, voix):
         cmd_piper(voix, sortie_wav),
         input=texte.encode("utf-8"),
         stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
+        env=env_piper(),
     )
     if proc.returncode != 0:
         sys.exit("[ERREUR] Piper a échoué. La voix est-elle téléchargée ?\n"

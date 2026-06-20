@@ -3,8 +3,9 @@
 ## Workflow par défaut : c'est Claude qui rédige les textes
 
 Quand l'utilisateur demande un sujet (« génère-moi un rapport audio sur X »),
-**je rédige moi-même** le fichier texte source dans `textes/<sujet>.txt`. Ne pas
-demander à l'utilisateur de fournir le texte.
+**je rédige moi-même** le fichier texte source dans
+`texts/<AAAA_MM_JJ>/<sujet>.txt`. Ne pas demander à l'utilisateur de fournir le
+texte.
 
 Le texte doit être :
 - **en français** ;
@@ -18,18 +19,24 @@ Contraintes de format imposées par `generate_audio.py` :
   littéralement par la synthèse vocale. Écrire les sigles de façon prononçable et
   les expliciter à la première occurrence.
 
-Nommage : `textes/<sujet-en-kebab-case>.txt`. La sortie audio sera
-`audio/<sujet>.mp3` (voir README).
+Rangement par jour : les fichiers générés sont regroupés dans un sous-dossier
+daté `AAAA_MM_JJ` (la date du jour). Un texte donne donc
+`texts/<AAAA_MM_JJ>/<sujet>.txt` et l'audio correspondant
+`audio/<AAAA_MM_JJ>/<sujet>.mp3` (voir README). Le nom de sujet reste en
+kebab-case. (`audio` reste au singulier : nom indénombrable ; `texts` au pluriel.)
 
 Après avoir écrit le texte, **lancer directement la génération audio** (l'utilisateur
-veut le MP3, pas seulement le texte). Commande type :
+veut le MP3, pas seulement le texte). Créer le sous-dossier audio daté au besoin
+(le script le fait via `--output`). Commande type (en remplaçant `<AAAA_MM_JJ>`
+par la date du jour) :
 
 ```powershell
-python generate_audio.py textes/<sujet>.txt --engine piper `
+python generate_audio.py texts/<AAAA_MM_JJ>/<sujet>.txt --engine piper `
     --voice "$env:USERPROFILE\.local\share\piper\voices\fr_FR-siwis-medium.onnx" `
-    --output audio/<sujet>
+    --output audio/<AAAA_MM_JJ>/<sujet>
 ```
 
-Versionnage : `textes/` et `audio/` sont **entièrement ignorés par git** (seuls les
-`.gitkeep` sont suivis). Les textes sont régénérables via un prompt et l'audio via
-le script — rien à versionner ni à ajouter à `.gitignore` à la création.
+Versionnage : `texts/` et `audio/` sont **entièrement ignorés par git** (seuls les
+`.gitkeep` suivent les dossiers racines). Les textes sont régénérables via un prompt
+et l'audio via le script — rien à versionner ni à ajouter à `.gitignore` à la
+création (les sous-dossiers datés sont couverts par `texts/*` et `audio/*`).
