@@ -5,9 +5,15 @@ generate_audio.py
 =================
 Transforme un fichier texte de narration en audio .mp3.
 
-Deux moteurs de synthèse vocale sont gérés :
-  - piper   : voix neuronale, son naturel, hors-ligne, GRATUIT  (RECOMMANDÉ)
-  - espeak  : voix robotique mais sans aucune configuration       (SECOURS)
+Trois moteurs de synthèse vocale sont gérés :
+  - xtts    : voix neuronale "LLM", la plus naturelle, GPU conseillé  (MEILLEUR)
+  - piper   : voix neuronale, son naturel, hors-ligne, GRATUIT      (LÉGER/RAPIDE)
+  - espeak  : voix robotique mais sans aucune configuration            (SECOURS)
+
+Le moteur xtts tourne dans un venv Python 3.11 dédié (PyTorch + coqui-tts) :
+ce script lui délègue le travail via xtts_worker.py. Le chemin du Python de ce
+venv est lu dans la variable d'environnement XTTS_PYTHON, sinon le défaut
+ci-dessous (XTTS_PYTHON_DEFAULT). Voir README pour l'installation du venv.
 
 ------------------------------------------------------------------------------
 INSTALLATION
@@ -49,6 +55,15 @@ import subprocess
 import sys
 import tempfile
 import wave
+
+
+# Python du venv XTTS (Python 3.11 + PyTorch + coqui-tts). Surchargé par la
+# variable d'environnement XTTS_PYTHON ; sinon ce défaut (installé via README).
+XTTS_PYTHON_DEFAULT = os.path.join(
+    os.path.expanduser("~"), "tts-bench", "venv-xtts", "Scripts", "python.exe"
+)
+XTTS_VOICE_DEFAULT = "Aaron Dreschner"
+PIPER_VOICE_DEFAULT = "fr_FR-siwis-medium"
 
 
 # ---------------------------------------------------------------------------
@@ -149,6 +164,30 @@ def synth_espeak(texte, sortie_wav, rate):
     run([exe, "-v", "fr", "-s", str(rate), "-p", "40", "-w", sortie_wav, texte])
 
 
+def synth_xtts(texte, voix, base, gap, xtts_python):
+    """Délègue toute la synthèse XTTS au worker exécuté dans le venv dédié.
+
+    XTTS exige PyTorch + coqui-tts (Python 3.11) ; on ne peut donc pas l'importer
+    ici. On lance xtts_worker.py avec le Python du venv, qui produit le MP3.
+    """
+    if not os.path.exists(xtts_python):
+        sys.exit(f"[ERREUR] Python du venv XTTS introuvable : {xtts_python}\n"
+                 "Definis XTTS_PYTHON ou installe le venv (voir README).")
+    worker = os.path.join(os.path.dirname(os.path.abspath(__file__)), "xtts_worker.py")
+
+    env = os.environ.copy()
+    env["PYTHONUTF8"] = "1"            # accents corrects dans le sous-processus
+    env["COQUI_TOS_AGREED"] = "1"
+
+    cmd = [xtts_python, worker, texte, "--voice", voix, "--gap", str(gap)]
+    if base:
+        cmd += ["--output", base]
+    # Sortie en direct (la synthese est longue) : pas de capture.
+    proc = subprocess.run(cmd, env=env)
+    if proc.returncode != 0:
+        sys.exit(f"[ERREUR] La synthese XTTS a echoue (code {proc.returncode}).")
+
+
 # ---------------------------------------------------------------------------
 # Assemblage audio
 # ---------------------------------------------------------------------------
@@ -201,11 +240,15 @@ def main():
 
     ap = argparse.ArgumentParser(description="Génère un audio .mp3 depuis un texte.")
     ap.add_argument("texte", help="Fichier texte de narration (paragraphes séparés par des lignes vides).")
-    ap.add_argument("--engine", choices=["piper", "espeak", "auto"], default="auto")
-    ap.add_argument("--voice", default="fr_FR-siwis-medium", help="Nom ou chemin du modèle Piper.")
+    ap.add_argument("--engine", choices=["xtts", "piper", "espeak", "auto"], default="auto")
+    ap.add_argument("--voice", default=None,
+                    help="Voix : nom XTTS (ex. 'Sofia Hellen') ou nom/chemin du modèle Piper. "
+                         "Défaut selon le moteur.")
     ap.add_argument("--output", default=None, help="Nom de base de sortie (sans extension).")
     ap.add_argument("--rate", type=int, default=155, help="Vitesse espeak (mots/min).")
     ap.add_argument("--gap", type=float, default=0.6, help="Silence entre paragraphes (s).")
+    ap.add_argument("--xtts-python", default=os.environ.get("XTTS_PYTHON", XTTS_PYTHON_DEFAULT),
+                    help="Python du venv XTTS (défaut : $XTTS_PYTHON ou ~/tts-bench/venv-xtts).")
     args = ap.parse_args()
 
     if not os.path.exists(args.texte):
@@ -213,9 +256,17 @@ def main():
 
     need("ffmpeg")
     moteur = detecter_moteur() if args.engine == "auto" else args.engine
+    print(f"Moteur de synthèse : {moteur}")
+
+    # Moteur XTTS : tout est délégué au worker du venv dédié (voir synth_xtts).
+    if moteur == "xtts":
+        voix = args.voice or XTTS_VOICE_DEFAULT
+        synth_xtts(args.texte, voix, args.output, args.gap, args.xtts_python)
+        return
+
     if moteur == "espeak":
         need("espeak-ng" if shutil.which("espeak-ng") else "espeak")
-    print(f"Moteur de synthèse : {moteur}")
+    voix_piper = args.voice or PIPER_VOICE_DEFAULT
 
     paragraphes = lire_paragraphes(args.texte)
     if not paragraphes:
@@ -228,7 +279,7 @@ def main():
         os.makedirs(dossier, exist_ok=True)
 
     with tempfile.TemporaryDirectory() as tmp:
-        morceaux = construire_audio(paragraphes, moteur, args.voice, args.rate, args.gap, tmp)
+        morceaux = construire_audio(paragraphes, moteur, voix_piper, args.rate, args.gap, tmp)
         wav_final = os.path.join(tmp, "final.wav")
         print("\nAssemblage de la piste audio...")
         concatener(morceaux, wav_final, tmp)

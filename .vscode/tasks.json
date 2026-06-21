@@ -5,6 +5,28 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "Générer l'audio (fichier courant, voix XTTS Aaron Dreschner)",
+      "type": "shell",
+      "command": "python",
+      "args": [
+        "generate_audio.py",
+        "${file}",
+        "--engine", "xtts",
+        "--voice", "Aaron Dreschner",
+        "--output", "audio/${fileBasenameNoExtension}"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1",
+          "PATH": "C:\\Users\\riber\\ffmpeg\\ffmpeg-8.1.1-essentials_build\\bin;${env:PATH}"
+        }
+      },
+      "group": { "kind": "build", "isDefault": true },
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
       "label": "Générer l'audio (fichier courant, voix Piper)",
       "type": "shell",
       "command": "python",
@@ -19,10 +41,10 @@
         "cwd": "${workspaceFolder}",
         "env": {
           "PYTHONUTF8": "1",
-          "PATH": "C:\\Users\\riber\\AppData\\Local\\Python\\pythoncore-3.14-64\\Scripts;C:\\Users\\riber\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\\ffmpeg-8.1.1-full_build\\bin;${env:PATH}"
+          "PATH": "C:\\Users\\riber\\ffmpeg\\ffmpeg-8.1.1-essentials_build\\bin;${env:PATH}"
         }
       },
-      "group": { "kind": "build", "isDefault": true },
+      "group": "build",
       "presentation": { "reveal": "always", "panel": "shared", "clear": true },
       "problemMatcher": []
     }
