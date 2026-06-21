@@ -27,21 +27,20 @@ kebab-case. (`audio` reste au singulier : nom indénombrable ; `texts` au plurie
 
 Après avoir écrit le texte, **lancer directement la génération audio** (l'utilisateur
 veut le MP3, pas seulement le texte). Créer le sous-dossier audio daté au besoin
-(le script le fait via `--output`). Commande type par défaut — moteur **XTTS**,
-voix **Aaron Dreschner** (la plus naturelle, GPU) — en remplaçant `<AAAA_MM_JJ>`
-par la date du jour :
+(le script le fait via `--output`). Commande type par défaut — moteur **Piper**,
+voix **fr_FR-siwis-medium** (naturelle, légère, 100 % locale, sans GPU) — en
+remplaçant `<AAAA_MM_JJ>` par la date du jour :
 
 ```powershell
-python generate_audio.py texts/<AAAA_MM_JJ>/<sujet>.txt --engine xtts `
-    --voice "Aaron Dreschner" `
+python generate_audio.py texts/<AAAA_MM_JJ>/<sujet>.txt --engine piper `
+    --voice "$env:USERPROFILE\.local\share\piper\voices\fr_FR-siwis-medium.onnx" `
     --output audio/<AAAA_MM_JJ>/<sujet>
 ```
 
-XTTS tourne dans un venv Python 3.11 dédié (`~/tts-bench/venv-xtts`) auquel le
-script délègue automatiquement. Installation des prérequis en une commande :
-`powershell -ExecutionPolicy Bypass -File .\setup_xtts.ps1` (voir README). Repli
-léger sans GPU :
-`--engine piper --voice "$env:USERPROFILE\.local\share\piper\voices\fr_FR-siwis-medium.onnx"`.
+Piper lit le texte par paragraphes (séparés par une ligne vide) ; il n'a pas la
+limite de longueur de phrase de XTTS. ffmpeg est requis (assemblage/encodage MP3) ;
+il est installé dans le PATH. Voir README pour les prérequis et les autres voix
+françaises disponibles.
 
 Versionnage : `texts/` et `audio/` sont **entièrement ignorés par git** (seuls les
 `.gitkeep` suivent les dossiers racines). Les textes sont régénérables via un prompt
