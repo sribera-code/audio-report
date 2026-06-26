@@ -21,9 +21,20 @@ Contraintes de format imposées par `generate_audio.py` :
 
 Rangement par jour : les fichiers générés sont regroupés dans un sous-dossier
 daté `AAAA_MM_JJ` (la date du jour). Un texte donne donc
-`texts/<AAAA_MM_JJ>/<sujet>.txt` et l'audio correspondant
-`audio/<AAAA_MM_JJ>/<sujet>.mp3` (voir README). Le nom de sujet reste en
+`texts/<AAAA_MM_JJ>/<NN>_<sujet>.txt` et l'audio correspondant
+`audio/<AAAA_MM_JJ>/<NN>_<sujet>.mp3` (voir README). Le nom de sujet reste en
 kebab-case. (`audio` reste au singulier : nom indénombrable ; `texts` au pluriel.)
+
+Numérotation pour conserver l'ordre : chaque fichier généré est **préfixé d'un
+numéro de génération sur deux chiffres** (zéro initial pour les numéros inférieurs
+à 10) suivi d'un underscore, `<NN>_<sujet>` (par exemple `08_grit-tenacite`,
+`12_castor-affaire`). **Toujours zéro-remplir sur deux chiffres** pour que l'ordre
+alphabétique des fichiers corresponde à l'ordre de génération. Le compteur est
+**par jour** : il faut donc **toujours d'abord lister les fichiers déjà présents
+dans `texts/<AAAA_MM_JJ>/` (et `audio/<AAAA_MM_JJ>/`) pour repérer le dernier
+numéro utilisé**, puis continuer à partir de ce numéro plus un. Le même numéro
+relie le texte et son audio. Si plusieurs rapports sont générés d'un coup, ils
+prennent des numéros consécutifs dans l'ordre de création.
 
 Après avoir écrit le texte, **lancer directement la génération audio** (l'utilisateur
 veut le MP3, pas seulement le texte). Créer le sous-dossier audio daté au besoin
@@ -32,9 +43,9 @@ voix **fr_FR-siwis-medium** (naturelle, légère, 100 % locale, sans GPU) — en
 remplaçant `<AAAA_MM_JJ>` par la date du jour :
 
 ```powershell
-python generate_audio.py texts/<AAAA_MM_JJ>/<sujet>.txt --engine piper `
+python generate_audio.py texts/<AAAA_MM_JJ>/<NN>_<sujet>.txt --engine piper `
     --voice "$env:USERPROFILE\.local\share\piper\voices\fr_FR-siwis-medium.onnx" `
-    --output audio/<AAAA_MM_JJ>/<sujet>
+    --output audio/<AAAA_MM_JJ>/<NN>_<sujet>
 ```
 
 Piper lit le texte par paragraphes (séparés par une ligne vide) ; il n'a pas la

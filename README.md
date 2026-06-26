@@ -10,9 +10,9 @@ autre chose.
 audio-report/
 ├── generate_audio.py       # le script texte -> audio
 ├── texts/                  # un .txt par sujet, rangé par jour (la source à narrer)
-│   └── AAAA_MM_JJ/         #   ex. texts/2026_06_20/mon-sujet.txt
+│   └── AAAA_MM_JJ/         #   ex. texts/2026_06_20/01_mon-sujet.txt
 ├── audio/                  # les .mp3 générés, rangés par jour (ignorés par git)
-│   └── AAAA_MM_JJ/         #   ex. audio/2026_06_20/mon-sujet.mp3
+│   └── AAAA_MM_JJ/         #   ex. audio/2026_06_20/01_mon-sujet.mp3
 └── .vscode/tasks.json      # génération en un raccourci dans VS Code
 ```
 
@@ -27,13 +27,20 @@ Piper est le moteur recommandé : 100 % local, instantané, sans GPU. La voix pa
 défaut est **fr_FR-siwis-medium** (féminine, claire).
 
 Les fichiers générés sont regroupés par jour dans un sous-dossier daté
-`AAAA_MM_JJ`. Chaque `texts/<jour>/mon-sujet.txt` produit
-`audio/<jour>/mon-sujet.mp3`. Les paragraphes sont séparés par une **ligne vide**.
-(`audio` est invariable, `texts` prend un s.)
+`AAAA_MM_JJ`. Chaque `texts/<jour>/<NN>_mon-sujet.txt` produit
+`audio/<jour>/<NN>_mon-sujet.mp3`. Les paragraphes sont séparés par une **ligne
+vide**. (`audio` est invariable, `texts` prend un s.)
+
+Numérotation de l'ordre : chaque fichier est **préfixé d'un numéro de génération
+sur deux chiffres** `<NN>_` avec zéro initial (ex. `01_mon-sujet.txt`,
+`02_autre-sujet.txt`) pour que l'ordre alphabétique du dossier suive l'ordre de
+génération. Le compteur repart **par jour** : avant de générer, **lister les
+fichiers déjà présents dans `texts/<jour>/` pour connaître le dernier numéro** et
+continuer à partir de là. Le texte et son audio portent le même numéro.
 
 ## Générer un audio (dans VS Code)
 
-1. Ouvrir le fichier `texts/<jour>/<sujet>.txt`.
+1. Ouvrir le fichier `texts/<jour>/<NN>_<sujet>.txt`.
 2. `Ctrl+Shift+B` → tâche **« Générer l'audio (fichier courant, voix Piper siwis-medium) »**.
 3. Le MP3 apparaît dans `audio/` (à la racine ; pour le ranger dans le
    sous-dossier daté, utiliser la ligne de commande ci-dessous).
@@ -41,15 +48,15 @@ Les fichiers générés sont regroupés par jour dans un sous-dossier daté
 Ou en ligne de commande — voix Piper par défaut (fr_FR-siwis-medium) :
 
 ```powershell
-python generate_audio.py texts/2026_06_20/mon-sujet.txt --engine piper `
+python generate_audio.py texts/2026_06_20/01_mon-sujet.txt --engine piper `
     --voice "$env:USERPROFILE\.local\share\piper\voices\fr_FR-siwis-medium.onnx" `
-    --output audio/2026_06_20/mon-sujet
+    --output audio/2026_06_20/01_mon-sujet
 ```
 
 Le plus court (auto-détection Piper/espeak, sortie à côté du texte) :
 
 ```powershell
-python generate_audio.py texts/2026_06_20/mon-sujet.txt
+python generate_audio.py texts/2026_06_20/01_mon-sujet.txt
 ```
 
 ## Pré-requis
